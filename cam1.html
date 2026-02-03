@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Camera Test</title>
+
+  <style>
+    #video, #photo {
+      border: 2px solid #000;
+      box-shadow: 2px 2px 5px #333;
+      width: 320px;
+      height: 240px;
+    }
+
+    #canvas { display: none; }
+
+    #startbutton, #endbutton {
+      margin: 10px;
+      padding: 8px 16px;
+      background: rgba(0, 150, 0, 0.7);
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    #statusBox {
+      margin-top: 15px;
+      padding: 10px;
+      width: 320px;
+      border: 2px solid #333;
+      font-weight: bold;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 20px;
+    }
+  </style>
+
+  <script>
+    (function () {
+      let width = 320;
+      let height = 0;
+      let streaming = false;
+
+      let video, canvas, photo, startbutton, endbutton;
+
+      function startup() {
+        video = document.getElementById('video');
+        canvas = document.getElementById('canvas');
+        photo = document.getElementById('photo');
+        startbutton = document.getElementById('startbutton');
+        endbutton = document.getElementById('endbutton');
+
+        const statusEl = document.getElementById("camStatus");
+
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+          .then(function (stream) {
+            video.srcObject = stream;
+            video.play();
+            statusEl.textContent = "🟢 Camera Working";
+            statusEl.style.color = "green";
+          })
+          .catch(function (err) {
+            statusEl.textContent = "🔴 Camera Not Detected / Blocked";
+            statusEl.style.color = "red";
+            alert("Camera error: " + err.name);
+          });
+
+        video.addEventListener('canplay', function () {
+          if (!streaming) {
+            height = video.videoHeight / (video.videoWidth / width);
+            if (isNaN(height)) height = width / (4 / 3);
+
+            video.setAttribute('width', width);
+            video.setAttribute('height', height);
+            canvas.setAttribute('width', width);
+            canvas.setAttribute('height', height);
+            streaming = true;
+          }
+        }, false);
+
+        startbutton.addEventListener('click', function (ev) {
+          takepicture();
+          ev.preventDefault();
+        }, false);
+
+        endbutton.addEventListener('click', function (ev) {
+          stoprecording();
+          ev.preventDefault();
+        }, false);
+
+        clearphoto();
+      }
+
+      function clearphoto() {
+        const context = canvas.getContext('2d');
+        context.fillStyle = "#AAA";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        const data = canvas.toDataURL('image/png');
+        photo.setAttribute('src', data);
+      }
+
+      function stoprecording() {
+        if (video.srcObject) {
+          video.srcObject.getTracks().forEach(track => track.stop());
+        }
+      }
+
+      function takepicture() {
+        const context = canvas.getContext('2d');
+        if (width && height) {
+          canvas.width = width;
+          canvas.height = height;
+          context.drawImage(video, 0, 0, width, height);
+          const data = canvas.toDataURL('image/png');
+          photo.setAttribute('src', data);
+        } else {
+          clearphoto();
+        }
+      }
+
+      window.addEventListener('load', startup, false);
+    })();
+  </script>
+</head>
+
+<body>
+  <h2>📸 Laptop Camera Test</h2>
+
+  <!-- Box 1: Live Camera -->
+  <video id="video">Video stream not available.</video>
+
+  <div>
+    <button id="startbutton">Take Photo</button>
+    <button id="endbutton">Stop Camera</button>
+  </div>
+
+  <!-- Box 2: Captured Photo -->
+  <img id="photo" alt="Captured image will appear here">
+
+  <!-- Box 3: Camera Status -->
+  <div id="statusBox">
+    Camera Status: <span id="camStatus">Checking...</span>
+  </div>
+
+</body>
+</html>

@@ -62,11 +62,11 @@
           .then(function (stream) {
             video.srcObject = stream;
             video.play();
-            statusEl.textContent = "🟢 Camera Working";
+            statusEl.textContent = "Camera Working";
             statusEl.style.color = "green";
           })
           .catch(function (err) {
-            statusEl.textContent = "🔴 Camera Not Detected / Blocked";
+            statusEl.textContent = "Camera Not Detected / Blocked";
             statusEl.style.color = "red";
             alert("Camera error: " + err.name);
           });
@@ -130,7 +130,7 @@
 </head>
 
 <body>
-  <h2>📸 Laptop Camera Test</h2>
+  <h2> Laptop Camera Test</h2>
 
   <!-- Box 1: Live Camera -->
   <video id="video">Video stream not available.</video>
